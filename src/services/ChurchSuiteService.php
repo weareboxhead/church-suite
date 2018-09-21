@@ -65,6 +65,9 @@ class ChurchSuiteService extends Component
         // Request data form the API
         $this->remoteData = $this->getAPIData();
 
+        // echo '<pre>'; print_r($this->remoteData); echo '</pre>';
+        // die();
+
         // Get local Small Group data
         $this->localData = $this->getLocalData();
 
@@ -151,10 +154,25 @@ class ChurchSuiteService extends Component
         // Get all ChurchSuite small groups
         $client = new Client();
 
-        $response = $client->request('GET', $this->baseUrl . 'smallgroups/groups', [
+        // $response = $client->request('GET', $this->baseUrl . 'smallgroups/groups', [
+        //     'query'   => [
+        //         'per_page'  => 500,
+        //         'tags'      => 'true',
+        //         'view'      => 'active_future'
+        //     ],
+        //     'headers' => [
+        //         'Content-Type'  => 'application/json',
+        //         'X-Account'     => 'weareemmanuel',
+        //         'X-Application' => 'WeAreEmmanuel-Website',
+        //         'X-Auth'        => $this->settings->apiKey
+        //     ]
+        // ]);
+
+        $url = 'https://weareemmanuel.churchsuite.co.uk/embed/smallgroups/json';
+
+        $response = $client->request('GET', $url, [
             'query'   => [
-                'per_page'  => 500,
-                'tags'      => 'true',
+                'show_tags' => 1,
                 'view'      => 'active_future'
             ],
             'headers' => [
@@ -164,6 +182,7 @@ class ChurchSuiteService extends Component
                 'X-Auth'        => $this->settings->apiKey
             ]
         ]);
+
 
         // Do we have a success response?
         if ($response->getStatusCode() !== 200)
@@ -176,14 +195,12 @@ class ChurchSuiteService extends Component
         $body = json_decode($response->getBody());
 
         // Are there any results
-        if (count($body->groups) === 0)
+        if (count($body) === 0)
         {
             Craft::error('ChurchSuite: No results from API Request', __METHOD__);
 
             return false;
         }
-
-// echo '<pre>'; print_r($body); echo '</pre>';
 
         $data = array(
             'ids'       =>  array(),
@@ -191,7 +208,7 @@ class ChurchSuiteService extends Component
         );
 
         // For each Small Group
-        foreach ($body->groups as $group)
+        foreach ($body as $group)
         {
             // Get the id
             $smallGroupId = $group->id;

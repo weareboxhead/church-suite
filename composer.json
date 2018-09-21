@@ -25,13 +25,13 @@
     },
     "autoload": {
         "psr-4": {
-          "boxhead\\churchsuite\\": "src/"
+            "boxhead\\churchsuite\\": "src/"
         }
     },
     "extra": {
         "name": "ChurchSuite",
         "handle": "church-suite",
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "hasCpSettings": true,
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/weareboxhead/church-suite/master/CHANGELOG.md",
