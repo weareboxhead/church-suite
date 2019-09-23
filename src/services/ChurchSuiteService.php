@@ -154,20 +154,6 @@ class ChurchSuiteService extends Component
         // Get all ChurchSuite small groups
         $client = new Client();
 
-        // $response = $client->request('GET', $this->baseUrl . 'smallgroups/groups', [
-        //     'query'   => [
-        //         'per_page'  => 500,
-        //         'tags'      => 'true',
-        //         'view'      => 'active_future'
-        //     ],
-        //     'headers' => [
-        //         'Content-Type'  => 'application/json',
-        //         'X-Account'     => 'weareemmanuel',
-        //         'X-Application' => 'WeAreEmmanuel-Website',
-        //         'X-Auth'        => $this->settings->apiKey
-        //     ]
-        // ]);
-
         $url = 'https://weareemmanuel.churchsuite.co.uk/embed/smallgroups/json';
 
         $response = $client->request('GET', $url, [
@@ -345,8 +331,8 @@ class ChurchSuiteService extends Component
             'smallGroupAddressName'     => (isset($group->location->address_name)) ? $group->location->address_name : '',
             'smallGroupLatitude'        => (isset($group->location->latitude)) ? $group->location->latitude : '',
             'smallGroupLongitude'       => (isset($group->location->longitude)) ? $group->location->longitude : '',
-            'smallGroupCategories'      => (isset($group->tags)) ? $this->parseTags($group->tags) : [],
-            'smallGroupSite'            => (isset($group->site)) ? $this->parseSite($group->site) : [],
+            'smallGroupCategories'      => (isset($group->tags)) ? $this->parseTags($group) : [],
+            'smallGroupSite'            => (isset($group->site)) ? $this->parseSite($group->site) : $this->parseSite(null),
         ]);
 
         // Save the entry!
@@ -384,7 +370,7 @@ class ChurchSuiteService extends Component
     }
 
 
-    private function parseTags($tags)
+    private function parseTags($group)
     {
         // If there is no category group specified, don't do this
         if (!$this->settings->categoryGroupId) {
@@ -392,7 +378,7 @@ class ChurchSuiteService extends Component
         }
 
         // Are thre any tags even assigned?
-        if (! $tags) {
+        if (! $group->tags) {
             return [];
         }
 
@@ -413,10 +399,19 @@ class ChurchSuiteService extends Component
         $returnIds = [];
 
         // Loop over tags assigned to the group
-        foreach ($tags as $tag) {
+        foreach ($group->tags as $tag) {
             // We just need the text
             $tagSlug = ElementHelper::createSlug($tag->name);
             $categorySet = false;
+
+            // If the tagSlug === 'morning-service' || 'evening-service'
+            // we should only be adding the tag if the group site is also only for Clanredon Centre/New England
+            if ($tagSlug === 'morning-service' || $tagSlug === 'evening-service') {
+                // Site ID 1 == Calrendon Centre == New England
+                if (isset($group->site) && $group->site->name != '1') {
+                    break;
+                }
+            }
 
             // Does this tag exist already as a category?
             foreach ($categories as $slug => $id) {
@@ -474,10 +469,19 @@ class ChurchSuiteService extends Component
 
         $returnIds = [];
 
-        // $siteSlug = ElementHelper::createSlug($site->name);
-        $categorySet = false;
+        // If $site is null we should infer that this means the group should be assigned to all the site categories.
+        if ($site == null) {
+            // Does this site exist already as a category?
+            foreach ($categories as $id) {
+                $returnIds[] = $id;
+            }
+
+            return $returnIds;
+        } 
 
         // Does this site exist already as a category?
+        $categorySet = false;
+
         foreach ($categories as $churchSuiteSiteId => $id) {
             // Site already a category
             if ($churchSuiteSiteId == $site->id) {
