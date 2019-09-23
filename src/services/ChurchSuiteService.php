@@ -11,16 +11,13 @@
 namespace boxhead\churchsuite\services;
 
 use boxhead\churchsuite\ChurchSuite;
-
 use Craft;
 use craft\base\Component;
-use craft\elements\Entry;
 use craft\elements\Category;
-use craft\helpers\ElementHelper;
+use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
-
+use craft\helpers\ElementHelper;
 use GuzzleHttp\Client;
-
 
 /**
  * ChurchSuiteService Service
@@ -86,7 +83,7 @@ class ChurchSuiteService extends Component
 
         // Create all missing small groups
         foreach ($missingIds as $id) {
-           $this->createEntry($this->remoteData['smallgroups'][$id]);
+            $this->createEntry($this->remoteData['smallgroups'][$id]);
         }
 
         // Update all small groups that have been previously saved to keep our data in sync
@@ -102,9 +99,6 @@ class ChurchSuiteService extends Component
         return;
     }
 
-
-
-
     // Private Methods
     // =========================================================================
 
@@ -117,35 +111,30 @@ class ChurchSuiteService extends Component
             return false;
         }
 
-        if (!$this->settings->sectionId)
-        {
+        if (!$this->settings->sectionId) {
             Craft::error('ChurchSuite: No Section ID provided in settings', __METHOD__);
 
             return false;
         }
 
-        if (!$this->settings->entryTypeId)
-        {
+        if (!$this->settings->entryTypeId) {
             Craft::error('ChurchSuite: No Entry Type ID provided in settings', __METHOD__);
 
             return false;
         }
 
-        if (!$this->settings->categoryGroupId)
-        {
+        if (!$this->settings->categoryGroupId) {
             Craft::error('ChurchSuite: No General Category Group ID provided in settings', __METHOD__);
 
             return false;
         }
 
-        if (!$this->settings->sitesCategoryGroupId)
-        {
+        if (!$this->settings->sitesCategoryGroupId) {
             Craft::error('ChurchSuite: No Sites Category Group ID provided in settings', __METHOD__);
 
             return false;
         }
     }
-
 
     private function getAPIData()
     {
@@ -157,22 +146,20 @@ class ChurchSuiteService extends Component
         $url = 'https://weareemmanuel.churchsuite.co.uk/embed/smallgroups/json';
 
         $response = $client->request('GET', $url, [
-            'query'   => [
+            'query' => [
                 'show_tags' => 1,
-                'view'      => 'active_future'
+                'view' => 'active_future',
             ],
             'headers' => [
-                'Content-Type'  => 'application/json',
-                'X-Account'     => 'weareemmanuel',
+                'Content-Type' => 'application/json',
+                'X-Account' => 'weareemmanuel',
                 'X-Application' => 'WeAreEmmanuel-Website',
-                'X-Auth'        => $this->settings->apiKey
-            ]
+                'X-Auth' => $this->settings->apiKey,
+            ],
         ]);
 
-
         // Do we have a success response?
-        if ($response->getStatusCode() !== 200)
-        {
+        if ($response->getStatusCode() !== 200) {
             Craft::error('ChurchSuite: API Reponse Error ' . $response->getStatusCode() . ": " . $response->getReasonPhrase(), __METHOD__);
 
             return false;
@@ -181,21 +168,19 @@ class ChurchSuiteService extends Component
         $body = json_decode($response->getBody());
 
         // Are there any results
-        if (count($body) === 0)
-        {
+        if (count($body) === 0) {
             Craft::error('ChurchSuite: No results from API Request', __METHOD__);
 
             return false;
         }
 
         $data = array(
-            'ids'       =>  array(),
-            'smallgroups'    =>  array(),
+            'ids' => array(),
+            'smallgroups' => array(),
         );
 
         // For each Small Group
-        foreach ($body as $group)
-        {
+        foreach ($body as $group) {
             // Get the id
             $smallGroupId = $group->id;
 
@@ -211,7 +196,6 @@ class ChurchSuiteService extends Component
         return $data;
     }
 
-
     private function getLocalData()
     {
         Craft::info('ChurchSuite: Get local Small Group data', __METHOD__);
@@ -224,20 +208,18 @@ class ChurchSuiteService extends Component
             ->all();
 
         $data = array(
-            'ids'           =>  [],
-            'smallgroups'   =>  []
+            'ids' => [],
+            'smallgroups' => []
         );
 
         Craft::info('ChurchSuite: Query for all Small Group entries', __METHOD__);
 
         // For each entry
-        foreach ($query as $entry)
-        {
+        foreach ($query as $entry) {
             $smallGroupId = "";
 
             // Get the id of this Small Group
-            if (isset($entry->smallGroupId))
-            {
+            if (isset($entry->smallGroupId)) {
                 $smallGroupId = $entry->smallGroupId;
             }
 
@@ -252,7 +234,6 @@ class ChurchSuiteService extends Component
 
         return $data;
     }
-
 
     private function createEntry($group)
     {
@@ -271,7 +252,6 @@ class ChurchSuiteService extends Component
         $this->saveFieldData($entry, $group);
     }
 
-
     private function updateEntry($entryId, $group)
     {
         // Create a new instance of the Craft Entry Model
@@ -283,7 +263,6 @@ class ChurchSuiteService extends Component
 
         $this->saveFieldData($entry, $group);
     }
-
 
     private function closeEntry($entryId)
     {
@@ -300,7 +279,6 @@ class ChurchSuiteService extends Component
         Craft::$app->elements->saveElement($entry);
     }
 
-
     private function saveFieldData($entry, $group)
     {
         // Enabled?
@@ -313,26 +291,26 @@ class ChurchSuiteService extends Component
 
         // Set the other content
         $entry->setFieldValues([
-            'smallGroupId'              => $group->id,
-            'smallGroupIdentifier'      => $group->identifier,
-            'smallGroupName'            => $group->name,
-            'smallGroupDescription'     => $group->description,
-            'smallGroupDay'             => $group->day,
-            'smallGroupFrequency'       => $group->frequency,
-            'smallGroupTime'            => $group->time,
-            'smallGroupStartDate'       => $group->date_start,
-            'smallGroupEndDate'         => $group->date_end,
+            'smallGroupId' => $group->id,
+            'smallGroupIdentifier' => $group->identifier,
+            'smallGroupName' => $group->name,
+            'smallGroupDescription' => $group->description,
+            'smallGroupDay' => $group->day,
+            'smallGroupFrequency' => $group->frequency,
+            'smallGroupTime' => $group->time,
+            'smallGroupStartDate' => $group->date_start,
+            'smallGroupEndDate' => $group->date_end,
             'smallGroupSignupStartDate' => $group->signup_date_start,
-            'smallGroupSignupEndDate'   => $group->signup_date_end,
-            'smallGroupCapacity'        => $group->signup_capacity,
-            'smallGroupNumberMembers'   => $group->no_members,
-            'smallGroupLeaders'         => $leaders,
-            'smallGroupAddress'         => (isset($group->location->address)) ? $group->location->address : '',
-            'smallGroupAddressName'     => (isset($group->location->address_name)) ? $group->location->address_name : '',
-            'smallGroupLatitude'        => (isset($group->location->latitude)) ? $group->location->latitude : '',
-            'smallGroupLongitude'       => (isset($group->location->longitude)) ? $group->location->longitude : '',
-            'smallGroupCategories'      => (isset($group->tags)) ? $this->parseTags($group) : [],
-            'smallGroupSite'            => (isset($group->site)) ? $this->parseSite($group->site) : $this->parseSite(null),
+            'smallGroupSignupEndDate' => $group->signup_date_end,
+            'smallGroupCapacity' => $group->signup_capacity,
+            'smallGroupNumberMembers' => $group->no_members,
+            'smallGroupLeaders' => $leaders,
+            'smallGroupAddress' => (isset($group->location->address)) ? $group->location->address : '',
+            'smallGroupAddressName' => (isset($group->location->address_name)) ? $group->location->address_name : '',
+            'smallGroupLatitude' => (isset($group->location->latitude)) ? $group->location->latitude : '',
+            'smallGroupLongitude' => (isset($group->location->longitude)) ? $group->location->longitude : '',
+            'smallGroupCategories' => (isset($group->tags)) ? $this->parseTags($group) : [],
+            'smallGroupSite' => (isset($group->site)) ? $this->parseSite($group->site) : $this->parseSite(null),
         ]);
 
         // Save the entry!
@@ -369,7 +347,6 @@ class ChurchSuiteService extends Component
         return $leaders;
     }
 
-
     private function parseTags($group)
     {
         // If there is no category group specified, don't do this
@@ -378,7 +355,7 @@ class ChurchSuiteService extends Component
         }
 
         // Are thre any tags even assigned?
-        if (! $group->tags) {
+        if (!$group->tags) {
             return [];
         }
 
@@ -403,15 +380,6 @@ class ChurchSuiteService extends Component
             // We just need the text
             $tagSlug = ElementHelper::createSlug($tag->name);
             $categorySet = false;
-
-            // If the tagSlug === 'morning-service' || 'evening-service'
-            // we should only be adding the tag if the group site is also only for Clanredon Centre/New England
-            if ($tagSlug === 'morning-service' || $tagSlug === 'evening-service') {
-                // Site ID 1 == Calrendon Centre == New England
-                if (isset($group->site) && $group->site->name != '1') {
-                    break;
-                }
-            }
 
             // Does this tag exist already as a category?
             foreach ($categories as $slug => $id) {
@@ -446,7 +414,6 @@ class ChurchSuiteService extends Component
         return $returnIds;
     }
 
-
     private function parseSite($site)
     {
         // If there is no category group specified, don't do this
@@ -477,7 +444,7 @@ class ChurchSuiteService extends Component
             }
 
             return $returnIds;
-        } 
+        }
 
         // Does this site exist already as a category?
         $categorySet = false;
@@ -501,7 +468,7 @@ class ChurchSuiteService extends Component
             $newCategory->groupId = $this->settings->sitesCategoryGroupId;
 
             $newCategory->setFieldValues([
-                'churchSuiteSiteId' => $site->id
+                'churchSuiteSiteId' => $site->id,
             ]);
 
             // Save the category!
