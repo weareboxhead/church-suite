@@ -339,7 +339,7 @@ class ChurchSuiteService extends Component
         }
 
         foreach ($group->custom_fields as $custom_field) {
-            if ($custom_field->name === 'Leaders') {
+            if (isset($custom_field->name) && isset($custom_field->value) && $custom_field->name === 'Leaders') {
                 $leaders = $custom_field->value;
             }
         }
