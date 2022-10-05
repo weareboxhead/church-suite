@@ -1,25 +1,23 @@
 <?php
+
 /**
  * ChurchSuite plugin for Craft CMS 3.x
  *
  * Communicate and process data from the ChurchSuite API
  *
  * @link      https://boxhead.io
- * @copyright Copyright (c) 2018 Boxhead
+ * @copyright Copyright (c) Boxhead
  */
 
 namespace boxhead\churchsuite;
 
 use boxhead\churchsuite\services\ChurchSuiteService as ChurchSuiteServiceService;
 use boxhead\churchsuite\models\Settings;
-
 use Craft;
 use craft\base\Plugin;
 use craft\services\Plugins;
 use craft\events\PluginEvent;
 use craft\web\UrlManager;
-use craft\services\Elements;
-use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\models\FieldGroup;
 use craft\models\CategoryGroup;
@@ -27,26 +25,13 @@ use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\elements\Entry;
-
 use yii\base\Event;
 
 /**
- * Craft plugins are very much like little applications in and of themselves. We’ve made
- * it as simple as we can, but the training wheels are off. A little prior knowledge is
- * going to be required to write a plugin.
- *
- * For the purposes of the plugin docs, we’re going to assume that you know PHP and SQL,
- * as well as some semi-advanced concepts like object-oriented programming and PHP namespaces.
- *
- * https://craftcms.com/docs/plugins/introduction
  *
  * @author    Boxhead
  * @package   ChurchSuite
- * @since     1.0.0
  *
- * @property  ChurchSuiteServiceService $churchSuiteService
- * @property  Settings $settings
- * @method    Settings getSettings()
  */
 class ChurchSuite extends Plugin
 {
@@ -54,28 +39,28 @@ class ChurchSuite extends Plugin
     // =========================================================================
 
     /**
-     * Static property that is an instance of this plugin class so that it can be accessed via
-     * ChurchSuite::$plugin
-     *
      * @var ChurchSuite
      */
-    public static $plugin;
+    public static ChurchSuite $plugin;
+
+    /**
+     * @inheritdoc
+     */
     public $hasCpSettings = true;
+
+     /**
+     * @inheritdoc
+     */
+    // public string $schemaVersion = '1.2.0';
+
+    /**
+     * @inheritdoc
+     */
+    // public string $minVersionRequired = '1.1.0';
 
     // Public Methods
     // =========================================================================
 
-    /**
-     * Set our $plugin static property to this class so that it can be accessed via
-     * ChurchSuite::$plugin
-     *
-     * Called after the plugin class is instantiated; do any one-time initialization
-     * here such as hooks and events.
-     *
-     * If you have a '/vendor/autoload.php' file, it will be loaded for you automatically;
-     * you do not need to load it in your init() method.
-     *
-     */
     public function init()
     {
         parent::init();
@@ -87,15 +72,6 @@ class ChurchSuite extends Plugin
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['church-suite/sync']   = 'church-suite/default/sync-with-remote';
-                $event->rules['church-suite/update'] = 'church-suite/default/update-local-data';
-            }
-        );
-
-        // Register our elements
-        Event::on(
-            Elements::class,
-            Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function (RegisterComponentTypesEvent $event) {
             }
         );
 
@@ -111,24 +87,6 @@ class ChurchSuite extends Plugin
             }
         );
 
-        /**
-         * Logging in Craft involves using one of the following methods:
-         *
-         * Craft::trace(): record a message to trace how a piece of code runs. This is mainly for development use.
-         * Craft::info(): record a message that conveys some useful information.
-         * Craft::warning(): record a warning message that indicates something unexpected has happened.
-         * Craft::error(): record a fatal error that should be investigated as soon as possible.
-         *
-         * Unless `devMode` is on, only Craft::warning() & Craft::error() will log to `craft/storage/logs/web.log`
-         *
-         * It's recommended that you pass in the magic constant `__METHOD__` as the second parameter, which sets
-         * the category to the method (prefixed with the fully qualified class name) where the constant appears.
-         *
-         * To enable the Yii debug toolbar, go to your user account in the AdminCP and check the
-         * [] Show the debug toolbar on the front end & [] Show the debug toolbar on the Control Panel
-         *
-         * http://www.yiiframework.com/doc-2.0/guide-runtime-logging.html
-         */
         Craft::info(
             Craft::t(
                 'church-suite',

@@ -1,11 +1,9 @@
 <?php
+
 /**
- * ChurchSuite plugin for Craft CMS 3.x
- *
- * Communicate and process data from the ChurchSuite API
  *
  * @link      https://boxhead.io
- * @copyright Copyright (c) 2018 Boxhead
+ * @copyright Copyright (c) Boxhead
  */
 
 namespace boxhead\churchsuite\services;
@@ -20,123 +18,59 @@ use craft\helpers\ElementHelper;
 use GuzzleHttp\Client;
 
 /**
- * ChurchSuiteService Service
- *
- * All of your plugin’s business logic should go in services, including saving data,
- * retrieving data, etc. They provide APIs that your controllers, template variables,
- * and other plugins can interact with.
- *
- * https://craftcms.com/docs/plugins/services
- *
  * @author    Boxhead
  * @package   ChurchSuite
- * @since     1.0.0
  */
 class ChurchSuiteService extends Component
 {
     private $settings;
-    private $baseUrl = 'https://api.churchsuite.co.uk/v1/';
-    private $remoteData;
-    private $localData;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * This function can literally be anything you want, and you can have as many service
-     * functions as you want
-     *
-     * From any other plugin file, call it like this:
-     *
-     *     ChurchSuite::$plugin->churchSuiteService->sync()
-     *
-     * @return mixed
+     * @inheritdoc
      */
-    public function sync()
+    public function __construct()
     {
-        $this->settings = ChurchSuite::$plugin->getSettings();
-
         // Check for all required settings
         $this->checkSettings();
-
-        // Request data form the API
-        $this->remoteData = $this->getAPIData();
-
-        // echo '<pre>'; print_r($this->remoteData); echo '</pre>';
-        // die();
-
-        // Get local Small Group data
-        $this->localData = $this->getLocalData();
-
-        Craft::info('ChurchSuite: Compare remote data with local data', __METHOD__);
-
-        // Determine which entries we are missing by id
-        $missingIds = array_diff($this->remoteData['ids'], $this->localData['ids']);
-
-        // Determine which entries we shouldn't have by id
-        $removedIds = array_diff($this->localData['ids'], $this->remoteData['ids']);
-
-        // Determine which entries need updating (all active entries which we aren't about to create)
-        $updatingIds = array_diff($this->remoteData['ids'], $missingIds);
-
-        Craft::info('ChurchSuite: Create entries for all new Small Groups', __METHOD__);
-
-        // Create all missing small groups
-        foreach ($missingIds as $id) {
-            $this->createEntry($this->remoteData['smallgroups'][$id]);
-        }
-
-        // Update all small groups that have been previously saved to keep our data in sync
-        foreach ($updatingIds as $id) {
-            $this->updateEntry($this->localData['smallgroups'][$id], $this->remoteData['smallgroups'][$id]);
-        }
-
-        // If we have local data that doesn't match with anything from remote we should close the local entry
-        foreach ($removedIds as $id) {
-            $this->closeEntry($this->localData['smallgroups'][$id]);
-        }
-
-        return;
     }
 
-    // Private Methods
-    // =========================================================================
-
-    private function checkSettings()
+    public function getLocalData($limit = 2000)
     {
-        // Check our Plugin's settings for the apiKey
-        if ($this->settings->apiKey === null) {
-            Craft::error('ChurchSuite: No API Key provided in settings', __METHOD__);
+        // Create a Craft Element Criteria Model
+        $query = Entry::find()
+            ->sectionId($this->settings->sectionId)
+            ->limit($limit)
+            ->status(null)
+            ->all();
 
-            return false;
+        $data = array(
+            'ids' => [],
+            'smallgroups' => []
+        );
+
+        // For each entry
+        foreach ($query as $entry) {
+            $smallGroupId = "";
+
+            // Get the id of this Small Group
+            if (isset($entry->smallGroupId)) {
+                $smallGroupId = $entry->smallGroupId;
+            }
+
+            // Add this id to our array
+            $data['ids'][] = $smallGroupId;
+
+            // Add this entry id to our array, using the small group id as the key for reference
+            $data['smallgroups'][$smallGroupId] = $entry->id;
         }
 
-        if (!$this->settings->sectionId) {
-            Craft::error('ChurchSuite: No Section ID provided in settings', __METHOD__);
-
-            return false;
-        }
-
-        if (!$this->settings->entryTypeId) {
-            Craft::error('ChurchSuite: No Entry Type ID provided in settings', __METHOD__);
-
-            return false;
-        }
-
-        if (!$this->settings->categoryGroupId) {
-            Craft::error('ChurchSuite: No General Category Group ID provided in settings', __METHOD__);
-
-            return false;
-        }
-
-        if (!$this->settings->sitesCategoryGroupId) {
-            Craft::error('ChurchSuite: No Sites Category Group ID provided in settings', __METHOD__);
-
-            return false;
-        }
+        return $data;
     }
 
-    private function getAPIData()
+    public function getAPIData()
     {
         Craft::info('ChurchSuite: Begin sync with API', __METHOD__);
 
@@ -175,8 +109,8 @@ class ChurchSuiteService extends Component
         }
 
         $data = array(
-            'ids' => array(),
-            'smallgroups' => array(),
+            'ids' => [],
+            'smallgroups' => [],
         );
 
         // For each Small Group
@@ -187,7 +121,7 @@ class ChurchSuiteService extends Component
             // Add this id to our array
             $data['ids'][] = $smallGroupId;
 
-            // Add this tweet to our array, using the id as the key
+            // Add this small group to our array, using the id as the key
             $data['smallgroups'][$smallGroupId] = $group;
         }
 
@@ -196,46 +130,7 @@ class ChurchSuiteService extends Component
         return $data;
     }
 
-    private function getLocalData()
-    {
-        Craft::info('ChurchSuite: Get local Small Group data', __METHOD__);
-
-        // Create a Craft Element Criteria Model
-        $query = Entry::find()
-            ->sectionId($this->settings->sectionId)
-            ->limit(null)
-            ->status(null)
-            ->all();
-
-        $data = array(
-            'ids' => [],
-            'smallgroups' => []
-        );
-
-        Craft::info('ChurchSuite: Query for all Small Group entries', __METHOD__);
-
-        // For each entry
-        foreach ($query as $entry) {
-            $smallGroupId = "";
-
-            // Get the id of this Small Group
-            if (isset($entry->smallGroupId)) {
-                $smallGroupId = $entry->smallGroupId;
-            }
-
-            // Add this id to our array
-            $data['ids'][] = $smallGroupId;
-
-            // Add this entry id to our array, using the small group id as the key for reference
-            $data['smallgroups'][$smallGroupId] = $entry->id;
-        }
-
-        Craft::info('ChurchSuite: Return local data for comparison', __METHOD__);
-
-        return $data;
-    }
-
-    private function createEntry($group)
+    public function createEntry($group)
     {
         // Create a new instance of the Craft Entry Model
         $entry = new Entry();
@@ -252,7 +147,7 @@ class ChurchSuiteService extends Component
         $this->saveFieldData($entry, $group);
     }
 
-    private function updateEntry($entryId, $group)
+    public function updateEntry($entryId, $group)
     {
         // Create a new instance of the Craft Entry Model
         $entry = Entry::find()
@@ -264,7 +159,7 @@ class ChurchSuiteService extends Component
         $this->saveFieldData($entry, $group);
     }
 
-    private function closeEntry($entryId)
+    public function closeEntry($entryId)
     {
         // Create a new instance of the Craft Entry Model
         $entry = Entry::find()
@@ -277,6 +172,45 @@ class ChurchSuiteService extends Component
 
         // Re-save the entry
         Craft::$app->elements->saveElement($entry);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    private function checkSettings()
+    {
+        $this->settings = ChurchSuite::$plugin->getSettings();
+
+        // Check our Plugin's settings for the apiKey
+        if ($this->settings->apiKey === null) {
+            Craft::error('ChurchSuite: No API Key provided in settings', __METHOD__);
+
+            return false;
+        }
+
+        if (!$this->settings->sectionId) {
+            Craft::error('ChurchSuite: No Section ID provided in settings', __METHOD__);
+
+            return false;
+        }
+
+        if (!$this->settings->entryTypeId) {
+            Craft::error('ChurchSuite: No Entry Type ID provided in settings', __METHOD__);
+
+            return false;
+        }
+
+        if (!$this->settings->categoryGroupId) {
+            Craft::error('ChurchSuite: No General Category Group ID provided in settings', __METHOD__);
+
+            return false;
+        }
+
+        if (!$this->settings->sitesCategoryGroupId) {
+            Craft::error('ChurchSuite: No Sites Category Group ID provided in settings', __METHOD__);
+
+            return false;
+        }
     }
 
     private function saveFieldData($entry, $group)
