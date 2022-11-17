@@ -59,7 +59,7 @@ class ChurchSuite extends Plugin
     /**
      * @inheritdoc
      */
-    public string $minVersionRequired = '1.2.0';
+    public string $minVersionRequired = '2.0.0';
 
     // Public Methods
     // =========================================================================

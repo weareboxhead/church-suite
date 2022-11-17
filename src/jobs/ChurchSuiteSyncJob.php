@@ -69,8 +69,8 @@ class ChurchSuiteSyncJob extends BaseJob
             Queue::push(new ChurchSuiteUpdateSmallGroupItemJob($localData['smallgroups'][$id], $remoteData['smallgroups'][$id]));
         }
 
-        //     // If we have local data that doesn't match with anything from remote we should close the local entry
-        foreach ($updatingIds as $i => $id) {
+        // If we have local data that doesn't match with anything from remote we should close the local entry
+        foreach ($removeIds as $i => $id) {
             $x = $i + count($missingIds) + count($updatingIds);
 
             $this->setProgress(
