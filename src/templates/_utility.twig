@@ -1,0 +1,43 @@
+{% import "_includes/forms" as forms %}
+
+<h1>{{ 'ChurchSuite Actions'|t('church-suite') }}</h1>
+
+{% set cols = {
+    form: {
+        type: 'html',
+        heading: 'Action'|t('church-suite'),
+    },
+} %}
+
+{% set rows = [] %}
+{% for action in actions %}
+    {% set form %}
+        <div style="margin: 10px 0;">
+            <form class="utility" method="post" accept-charset="UTF-8">
+                <input type="hidden" name="action" value="church-suite/default/{{ action.id }}">
+                <input type="hidden" name="utility" value="1">
+
+                {{ redirectInput('utilities/church-suite') }}
+                {{ csrfInput() }}
+
+                <p class="light">{{ action.instructions|t('church-suite') }}</p>
+
+                <input type="submit" class="btn submit" value="{{ action.label|t('church-suite') }}">
+            </form>
+        </div>
+    {% endset %}
+
+    {% set rows = rows|merge([{
+        form: form,
+    }]) %}
+{% endfor %}
+
+{% if rows|length %}
+    {{ forms.editableTableField({
+        name: 'actions',
+        id: 'actions',
+        cols: cols,
+        rows: rows,
+        staticRows: true,
+    }) }}
+{% endif %}

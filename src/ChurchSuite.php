@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ChurchSuite plugin for Craft CMS 3.x
+ * ChurchSuite plugin for Craft CMS 4.x
  *
  * Communicate and process data from the ChurchSuite API
  *
@@ -11,21 +11,24 @@
 
 namespace boxhead\churchsuite;
 
-use boxhead\churchsuite\services\ChurchSuiteService as ChurchSuiteServiceService;
-use boxhead\churchsuite\models\Settings;
 use Craft;
-use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
-use craft\web\UrlManager;
-use craft\events\RegisterUrlRulesEvent;
-use craft\models\FieldGroup;
-use craft\models\CategoryGroup;
-use craft\models\CategoryGroup_SiteSettings;
-use craft\models\Section;
-use craft\models\Section_SiteSettings;
-use craft\elements\Entry;
 use yii\base\Event;
+use craft\base\Model;
+use craft\base\Plugin;
+use craft\elements\Entry;
+use craft\models\Section;
+use craft\web\UrlManager;
+use craft\services\Plugins;
+use craft\models\FieldGroup;
+use craft\events\PluginEvent;
+use craft\services\Utilities;
+use craft\models\CategoryGroup;
+use craft\models\Section_SiteSettings;
+use craft\events\RegisterUrlRulesEvent;
+use boxhead\churchsuite\models\Settings;
+use craft\models\CategoryGroup_SiteSettings;
+use craft\events\RegisterComponentTypesEvent;
+use boxhead\churchsuite\utilities\SyncUtility;
 
 /**
  *
@@ -46,7 +49,7 @@ class ChurchSuite extends Plugin
     /**
      * @inheritdoc
      */
-    public $hasCpSettings = true;
+    public bool $hasCpSettings = true;
 
      /**
      * @inheritdoc
@@ -56,12 +59,12 @@ class ChurchSuite extends Plugin
     /**
      * @inheritdoc
      */
-    // public string $minVersionRequired = '1.1.0';
+    public string $minVersionRequired = '1.2.0';
 
     // Public Methods
     // =========================================================================
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         self::$plugin = $this;
@@ -71,7 +74,7 @@ class ChurchSuite extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['church-suite/sync']   = 'church-suite/default/sync-with-remote';
+                $event->rules['church-suite/sync']   = 'church-suite/default/sync';
             }
         );
 
@@ -84,6 +87,15 @@ class ChurchSuite extends Plugin
                     // We were just installed
                     $this->buildFieldSectionStructure();
                 }
+            }
+        );
+
+        // Register CP Utility
+        Event::on(
+            Utilities::class,
+            Utilities::EVENT_REGISTER_UTILITY_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = SyncUtility::class;
             }
         );
 
@@ -100,7 +112,7 @@ class ChurchSuite extends Plugin
     // Protected Methods
     // =========================================================================
 
-    protected function buildFieldSectionStructure()
+    protected function buildFieldSectionStructure(): mixed
     {
         // Create the Small Groups Field Group
         Craft::info('Creating the Small Groups Field Group.', __METHOD__);
@@ -470,7 +482,7 @@ class ChurchSuite extends Plugin
      *
      * @return \craft\base\Model|null
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }

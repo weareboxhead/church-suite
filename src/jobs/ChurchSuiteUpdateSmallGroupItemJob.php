@@ -12,8 +12,8 @@ use boxhead\churchsuite\ChurchSuite;
 
 class ChurchSuiteUpdateSmallGroupItemJob extends BaseJob
 {
-    private $entryId;
-    private $group;
+    private ?int $entryId;
+    private ?object $group;
 
     /**
      * @inheritdoc

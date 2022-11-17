@@ -7,10 +7,12 @@
 
 namespace boxhead\churchsuite\controllers;
 
-use boxhead\churchsuite\ChurchSuite;
 use boxhead\churchsuite\jobs\ChurchSuiteSyncJob;
+use Craft;
 use craft\helpers\Queue;
 use craft\web\Controller;
+use craft\web\Response;
+use craft\web\View;
 
 /**
  *
@@ -28,7 +30,7 @@ class DefaultController extends Controller
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = ['sync-with-remote'];
+    protected array|int|bool $allowAnonymous = ['sync'];
 
     // Public Methods
     // =========================================================================
@@ -36,7 +38,37 @@ class DefaultController extends Controller
     /**
      * @return mixed
      */
-    public function actionSyncWithRemote() {
+    public function actionSync(): Response
+    {
         Queue::push(new ChurchSuiteSyncJob());
+
+        $message = 'Sync in progress.';
+
+        return $this->getResponse($message);
+    }
+
+    /**
+     * Returns a response.
+     */
+    private function getResponse(string $message, bool $success = true): Response
+    {
+        $request = Craft::$app->getRequest();
+
+        // If front-end or JSON request
+        if (Craft::$app->getView()->templateMode == View::TEMPLATE_MODE_SITE || $request->getAcceptsJson()) {
+            return $this->asJson([
+                'success' => $success,
+                'message' => Craft::t('church-suite', $message),
+            ]);
+        }
+
+        if ($success) {
+            Craft::$app->getSession()->setNotice(Craft::t('church-suite', $message));
+        }
+        else {
+            Craft::$app->getSession()->setError(Craft::t('church-suite', $message));
+        }
+
+        return $this->redirectToPostedUrl();
     }
 }

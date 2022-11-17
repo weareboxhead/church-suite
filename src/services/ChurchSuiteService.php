@@ -37,7 +37,7 @@ class ChurchSuiteService extends Component
         $this->checkSettings();
     }
 
-    public function getLocalData($limit = 2000)
+    public function getLocalData($limit = 2000): array
     {
         // Create a Craft Element Criteria Model
         $query = Entry::find()
@@ -70,7 +70,7 @@ class ChurchSuiteService extends Component
         return $data;
     }
 
-    public function getAPIData()
+    public function getAPIData(): array
     {
         Craft::info('ChurchSuite: Begin sync with API', __METHOD__);
 
@@ -130,7 +130,7 @@ class ChurchSuiteService extends Component
         return $data;
     }
 
-    public function createEntry($group)
+    public function createEntry($group): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = new Entry();
@@ -147,7 +147,7 @@ class ChurchSuiteService extends Component
         $this->saveFieldData($entry, $group);
     }
 
-    public function updateEntry($entryId, $group)
+    public function updateEntry($entryId, $group): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = Entry::find()
@@ -159,7 +159,7 @@ class ChurchSuiteService extends Component
         $this->saveFieldData($entry, $group);
     }
 
-    public function closeEntry($entryId)
+    public function closeEntry($entryId): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = Entry::find()
@@ -177,7 +177,7 @@ class ChurchSuiteService extends Component
     // Private Methods
     // =========================================================================
 
-    private function checkSettings()
+    private function checkSettings(): bool
     {
         $this->settings = ChurchSuite::$plugin->getSettings();
 
@@ -211,9 +211,11 @@ class ChurchSuiteService extends Component
 
             return false;
         }
+
+        return true;
     }
 
-    private function saveFieldData($entry, $group)
+    private function saveFieldData($entry, $group): bool
     {
         // Enabled?
         $entry->enabled = ($group->embed_visible == "1") ? true : false;
@@ -262,9 +264,11 @@ class ChurchSuiteService extends Component
 
         // Re-save the entry
         Craft::$app->elements->saveElement($entry);
+
+        return true;
     }
 
-    private function getLeaders($group)
+    private function getLeaders($group): string
     {
         $leaders = '';
 
@@ -281,7 +285,7 @@ class ChurchSuiteService extends Component
         return $leaders;
     }
 
-    private function parseTags($group)
+    private function parseTags($group): array
     {
         // If there is no category group specified, don't do this
         if (!$this->settings->categoryGroupId) {
@@ -312,7 +316,7 @@ class ChurchSuiteService extends Component
         // Loop over tags assigned to the group
         foreach ($group->tags as $tag) {
             // We just need the text
-            $tagSlug = ElementHelper::createSlug($tag->name);
+            $tagSlug = ElementHelper::normalizeSlug($tag->name);
             $categorySet = false;
 
             // Does this tag exist already as a category?
@@ -348,11 +352,11 @@ class ChurchSuiteService extends Component
         return $returnIds;
     }
 
-    private function parseSite($site)
+    private function parseSite($site): mixed
     {
         // If there is no category group specified, don't do this
         if (!$this->settings->sitesCategoryGroupId) {
-            return;
+            return false;
         }
 
         $categories = [];

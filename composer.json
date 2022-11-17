@@ -1,7 +1,7 @@
 {
   "name": "boxhead/church-suite",
   "description": "Communicate and process data to and from the ChurchSuite API",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "type": "craft-plugin",
   "keywords": [
     "craft",
@@ -23,7 +23,7 @@
     }
   ],
   "require": {
-    "craftcms/cms": "^3.0.0"
+    "craftcms/cms": "^4.0.0"
   },
   "autoload": {
     "psr-4": {

@@ -1,18 +1,7 @@
 <?php
-/**
- * ChurchSuite plugin for Craft CMS 3.x
- *
- * Communicate and process data from the ChurchSuite API
- *
- * @link      https://boxhead.io
- * @copyright Copyright (c) 2018 Boxhead
- */
 
 namespace boxhead\churchsuite\models;
 
-use boxhead\churchsuite\ChurchSuite;
-
-use Craft;
 use craft\base\Model;
 
 /**
@@ -22,13 +11,8 @@ use craft\base\Model;
  *
  * Models are containers for data. Just about every time information is passed
  * between services, controllers, and templates in Craft, it’s passed via a model.
- *
- * https://craftcms.com/docs/plugins/models
- *
- * @author    Boxhead
- * @package   ChurchSuite
- * @since     1.0.0
  */
+
 class Settings extends Model
 {
     // Public Properties
@@ -39,11 +23,11 @@ class Settings extends Model
      *
      * @var string
      */
-    public $apiKey = '';
-    public $sectionId = '';
-    public $entryTypeId = '';
-    public $categoryGroupId = '';
-    public $sitesCategoryGroupId = '';
+    public string $apiKey = '';
+    public string $sectionId = '';
+    public string $entryTypeId = '';
+    public string $categoryGroupId = '';
+    public string $sitesCategoryGroupId = '';
 
     // Public Methods
     // =========================================================================
@@ -58,7 +42,8 @@ class Settings extends Model
      *
      * @return array
      */
-    public function rules()
+    // public function rules(): array
+    protected function defineRules(): array
     {
         return [
             ['apiKey', 'required'],

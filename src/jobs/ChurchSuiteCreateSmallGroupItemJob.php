@@ -12,7 +12,7 @@ use boxhead\churchsuite\ChurchSuite;
 
 class ChurchSuiteCreateSmallGroupItemJob extends BaseJob
 {
-    private $group;
+    private ?object $group;
 
     /**
      * @inheritdoc

@@ -1,12 +1,4 @@
 <?php
-/**
- * ChurchSuite plugin for Craft CMS 3.x
- *
- * Communicate and process data from the ChurchSuite API
- *
- * @link      https://boxhead.io
- * @copyright Copyright (c) 2018 Boxhead
- */
 
 /**
  * ChurchSuite config.php
@@ -23,8 +15,6 @@
  */
 
 return [
-
     // This controls blah blah blah
     "someAttribute" => true,
-
 ];
