@@ -77,11 +77,10 @@ class ChurchSuiteService extends Component
         // Get all ChurchSuite small groups
         $client = new Client();
 
-        $url = 'https://weareemmanuel.churchsuite.co.uk/embed/smallgroups/json';
+        $url = 'https://weareemmanuel.churchsuite.com/embed/v2/smallgroups/json';
 
         $response = $client->request('GET', $url, [
             'query' => [
-                'show_tags' => 1,
                 'view' => 'active_future',
             ],
             'headers' => [
@@ -102,7 +101,7 @@ class ChurchSuiteService extends Component
         $body = json_decode($response->getBody());
 
         // Are there any results
-        if (count($body) === 0) {
+        if (count($body) === 0 || !isset($body['data'])) {
             Craft::error('ChurchSuite: No results from API Request', __METHOD__);
 
             return false;
@@ -114,7 +113,7 @@ class ChurchSuiteService extends Component
         );
 
         // For each Small Group
-        foreach ($body as $group) {
+        foreach ($body['data'] as $group) {
             // Get the id
             $smallGroupId = $group->id;
 
@@ -125,12 +124,15 @@ class ChurchSuiteService extends Component
             $data['smallgroups'][$smallGroupId] = $group;
         }
 
+        // Save a reference to any label data too
+        $data['labels'] = $body['labels'] ?? [];
+
         Craft::info('ChurchSuite: Finished getting remote data', __METHOD__);
 
         return $data;
     }
 
-    public function createEntry($group): void
+    public function createEntry($group, $labels): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = new Entry();
@@ -144,10 +146,10 @@ class ChurchSuiteService extends Component
         // Set the author as super admin
         $entry->authorId = 1;
 
-        $this->saveFieldData($entry, $group);
+        $this->saveFieldData($entry, $group, $labels);
     }
 
-    public function updateEntry($entryId, $group): void
+    public function updateEntry($entryId, $group, $labels): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = Entry::find()
@@ -156,7 +158,7 @@ class ChurchSuiteService extends Component
             ->status(null)
             ->one();
 
-        $this->saveFieldData($entry, $group);
+        $this->saveFieldData($entry, $group, $labels);
     }
 
     public function closeEntry($entryId): void
@@ -215,7 +217,7 @@ class ChurchSuiteService extends Component
         return true;
     }
 
-    private function saveFieldData($entry, $group): bool
+    private function saveFieldData($entry, $group, $labels): bool
     {
         // Enabled?
         $entry->enabled = ($group->embed_visible == "1") ? true : false;
@@ -245,7 +247,7 @@ class ChurchSuiteService extends Component
             'smallGroupAddressName' => (isset($group->location->address_name)) ? $group->location->address_name : '',
             'smallGroupLatitude' => (isset($group->location->latitude)) ? $group->location->latitude : '',
             'smallGroupLongitude' => (isset($group->location->longitude)) ? $group->location->longitude : '',
-            'smallGroupCategories' => (isset($group->tags)) ? $this->parseTags($group) : [],
+            'smallGroupCategories' => (isset($group->labels)) ? $this->parseLabels($group, $labels) : [],
             'smallGroupSite' => (isset($group->site)) ? $this->parseSite($group->site) : $this->parseSite(null),
         ]);
 
@@ -255,9 +257,6 @@ class ChurchSuiteService extends Component
 
             return false;
         }
-
-        // Set the signup start date as post date
-        // $entry->postDate = DateTimeHelper::toDateTime(strtotime($group->signup_date_start));
 
         // Set the postdate to now
         $entry->postDate = DateTimeHelper::toDateTime(time());
@@ -285,15 +284,15 @@ class ChurchSuiteService extends Component
         return $leaders;
     }
 
-    private function parseTags($group): array
+    private function parseLabels($group, $labels): array
     {
         // If there is no category group specified, don't do this
         if (!$this->settings->categoryGroupId) {
             return [];
         }
 
-        // Are thre any tags even assigned?
-        if (!$group->tags) {
+        // Are there any labels even assigned?
+        if (!$group->labels) {
             return [];
         }
 
@@ -311,17 +310,28 @@ class ChurchSuiteService extends Component
             $categories[$category->slug] = $category->id;
         }
 
+        // Parse the assigned labels actual name from separate array
+        $assignedLabels = [];
+
+        foreach ($group->labels as $label) {
+            foreach ($labels as $labelMeta) {
+                if ($label->id === $labelMeta->id) {
+                    $assignedLabels[] = $labelMeta;
+                }
+            }
+        }
+
         $returnIds = [];
 
-        // Loop over tags assigned to the group
-        foreach ($group->tags as $tag) {
+        // Loop over labels assigned to the group
+        foreach ($assignedLabels as $label) {
             // We just need the text
-            $tagSlug = ElementHelper::normalizeSlug($tag->name);
+            $tagSlug = ElementHelper::normalizeSlug($label->name);
             $categorySet = false;
 
-            // Does this tag exist already as a category?
+            // Does this label exist already as a category?
             foreach ($categories as $slug => $id) {
-                // Tag already a category
+                // Label already a category
                 if ($tagSlug === $slug) {
                     $returnIds[] = $id;
                     $categorySet = true;
@@ -335,7 +345,7 @@ class ChurchSuiteService extends Component
                 // Create the category
                 $newCategory = new Category();
 
-                $newCategory->title = $tag->name;
+                $newCategory->title = $label->name;
                 $newCategory->groupId = $this->settings->categoryGroupId;
 
                 // Save the category!

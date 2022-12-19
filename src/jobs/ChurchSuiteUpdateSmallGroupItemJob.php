@@ -14,14 +14,16 @@ class ChurchSuiteUpdateSmallGroupItemJob extends BaseJob
 {
     private ?int $entryId;
     private ?object $group;
+    private ?array $labels;
 
     /**
      * @inheritdoc
      */
-    public function __construct($entryId, $group)
+    public function __construct($entryId, $group, $labels)
     {
         $this->entryId = $entryId;
         $this->group = $group;
+        $this->labels = $labels;
     }
 
     /**
@@ -29,7 +31,7 @@ class ChurchSuiteUpdateSmallGroupItemJob extends BaseJob
      */
     public function execute($queue): void
     {
-        ChurchSuite::$plugin->churchSuiteService->updateEntry($this->entryId, $this->group);
+        ChurchSuite::$plugin->churchSuiteService->updateEntry($this->entryId, $this->group, $this->labels);
     }
 
     /**

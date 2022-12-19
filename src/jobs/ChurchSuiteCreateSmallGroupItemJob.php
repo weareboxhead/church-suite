@@ -13,13 +13,15 @@ use boxhead\churchsuite\ChurchSuite;
 class ChurchSuiteCreateSmallGroupItemJob extends BaseJob
 {
     private ?object $group;
+    private ?array $labels;
 
     /**
      * @inheritdoc
      */
-    public function __construct($group)
+    public function __construct($group, $labels)
     {
         $this->group = $group;
+        $this->labels = $labels;
     }
 
     /**
@@ -27,7 +29,7 @@ class ChurchSuiteCreateSmallGroupItemJob extends BaseJob
      */
     public function execute($queue): void
     {
-        ChurchSuite::$plugin->churchSuiteService->createEntry($this->group);
+        ChurchSuite::$plugin->churchSuiteService->createEntry($this->group, $this->labels);
     }
 
     /**

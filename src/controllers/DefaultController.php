@@ -64,8 +64,7 @@ class DefaultController extends Controller
 
         if ($success) {
             Craft::$app->getSession()->setNotice(Craft::t('church-suite', $message));
-        }
-        else {
+        } else {
             Craft::$app->getSession()->setError(Craft::t('church-suite', $message));
         }
 
