@@ -101,7 +101,7 @@ class ChurchSuiteService extends Component
         $body = json_decode($response->getBody());
 
         // Are there any results
-        if (!isset($body['data']) || !count($body['data'])) {
+        if (!isset($body->data) || !count($body->data)) {
             Craft::error('ChurchSuite: No results from API Request', __METHOD__);
 
             return false;
@@ -113,7 +113,7 @@ class ChurchSuiteService extends Component
         );
 
         // For each Small Group
-        foreach ($body['data'] as $group) {
+        foreach ($body->data as $group) {
             // Get the id
             $smallGroupId = $group->id;
 
@@ -125,7 +125,7 @@ class ChurchSuiteService extends Component
         }
 
         // Save a reference to any label data too
-        $data['labels'] = $body['labels'] ?? [];
+        $data['labels'] = $body->labels ?? [];
 
         Craft::info('ChurchSuite: Finished getting remote data', __METHOD__);
 
