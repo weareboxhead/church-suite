@@ -101,7 +101,7 @@ class ChurchSuiteService extends Component
         $body = json_decode($response->getBody());
 
         // Are there any results
-        if (count($body) === 0 || !isset($body['data'])) {
+        if (!isset($body['data']) || !count($body['data'])) {
             Craft::error('ChurchSuite: No results from API Request', __METHOD__);
 
             return false;
