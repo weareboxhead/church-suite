@@ -307,7 +307,10 @@ class ChurchSuiteService extends Component
         // For each category
         foreach ($query as $category) {
             // Add its slug and id to our array
-            $categories[$category->slug] = $category->id;
+            $categories[$category->slug] = [
+                'craftId' => $category->id,
+                'churchsuiteLabelId' => $category->churchsuiteLabelId
+            ];
         }
 
         // Parse the assigned labels actual name from separate array
@@ -326,14 +329,14 @@ class ChurchSuiteService extends Component
         // Loop over labels assigned to the group
         foreach ($assignedLabels as $label) {
             // We just need the text
-            $tagSlug = ElementHelper::normalizeSlug($label->name);
+            // $tagSlug = ElementHelper::normalizeSlug($label->name);
             $categorySet = false;
 
             // Does this label exist already as a category?
-            foreach ($categories as $slug => $id) {
+            foreach ($categories as $slug => $val) {
                 // Label already a category
-                if ($tagSlug === $slug) {
-                    $returnIds[] = $id;
+                if ($label->id == $val['churchsuiteLabelId']) {
+                    $returnIds[] = $val['craftId'];
                     $categorySet = true;
 
                     break;
@@ -347,6 +350,10 @@ class ChurchSuiteService extends Component
 
                 $newCategory->title = $label->name;
                 $newCategory->groupId = $this->settings->categoryGroupId;
+
+                $newCategory->setFieldValues([
+                    'churchsuiteLabelId' => $label->id
+                ]);
 
                 // Save the category!
                 if (!Craft::$app->elements->saveElement($newCategory)) {
