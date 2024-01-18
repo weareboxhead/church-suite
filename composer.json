@@ -1,54 +1,54 @@
 {
-  "name": "boxhead/church-suite",
-  "description": "Communicate and process data to and from the ChurchSuite API",
-  "version": "2.0.8",
-  "type": "craft-plugin",
-  "keywords": [
-    "craft",
-    "cms",
-    "craftcms",
-    "craft-plugin",
-    "churchsuite"
-  ],
-  "support": {
-    "docs": "https://github.com/weareboxhead/church-suite/blob/master/README.md",
-    "source": "https://github.com/weareboxhead/church-suite",
-    "issues": "https://github.com/weareboxhead/church-suite/issues"
-  },
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Boxhead",
-      "homepage": "https://boxhead.io"
-    }
-  ],
-  "require": {
-    "craftcms/cms": "^4.0.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "boxhead\\churchsuite\\": "src/"
-    }
-  },
-  "extra": {
-    "name": "ChurchSuite",
-    "handle": "church-suite",
-    "schemaVersion": "1.2.0",
-    "developer": "Boxhead",
-    "developerUrl": "https://boxhead.io",
-    "documentationUrl": "https://github.com/weareboxhead/church-suite/blob/master/README.md",
-    "changelogUrl": "https://raw.githubusercontent.com/weareboxhead/church-suite/master/CHANGELOG.md",
-    "hasCpSettings": true,
-    "hasCpSection": false,
-    "components": {
-      "churchSuiteService": "boxhead\\churchsuite\\services\\ChurchSuiteService"
+    "name": "boxhead/church-suite",
+    "description": "Communicate and process data to and from the ChurchSuite API",
+    "version": "2.1.0",
+    "type": "craft-plugin",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "churchsuite"
+    ],
+    "support": {
+        "docs": "https://github.com/weareboxhead/church-suite/blob/master/README.md",
+        "source": "https://github.com/weareboxhead/church-suite",
+        "issues": "https://github.com/weareboxhead/church-suite/issues"
     },
-    "class": "boxhead\\churchsuite\\ChurchSuite"
-  },
-  "config": {
-    "allow-plugins": {
-      "yiisoft/yii2-composer": true,
-      "craftcms/plugin-installer": true
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Boxhead",
+            "homepage": "https://boxhead.io"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^4.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "boxhead\\churchsuite\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "ChurchSuite",
+        "handle": "church-suite",
+        "schemaVersion": "1.2.0",
+        "developer": "Boxhead",
+        "developerUrl": "https://boxhead.io",
+        "documentationUrl": "https://github.com/weareboxhead/church-suite/blob/master/README.md",
+        "changelogUrl": "https://raw.githubusercontent.com/weareboxhead/church-suite/master/CHANGELOG.md",
+        "hasCpSettings": true,
+        "hasCpSection": false,
+        "components": {
+            "churchSuiteService": "boxhead\\churchsuite\\services\\ChurchSuiteService"
+        },
+        "class": "boxhead\\churchsuite\\ChurchSuite"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
     }
-  }
 }

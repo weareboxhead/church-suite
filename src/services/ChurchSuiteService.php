@@ -77,7 +77,7 @@ class ChurchSuiteService extends Component
         // Get all ChurchSuite small groups
         $client = new Client();
 
-        $url = 'https://weareemmanuel.churchsuite.com/embed/v2/smallgroups/json';
+        $url = 'https://weareemmanuel.churchsuite.com/embed/smallgroups/json';
 
         $response = $client->request('GET', $url, [
             'query' => [
@@ -101,7 +101,7 @@ class ChurchSuiteService extends Component
         $body = json_decode($response->getBody());
 
         // Are there any results
-        if (!isset($body->data) || !count($body->data)) {
+        if (!isset($body) || !count($body)) {
             Craft::error('ChurchSuite: No results from API Request', __METHOD__);
 
             return false;
@@ -113,7 +113,7 @@ class ChurchSuiteService extends Component
         );
 
         // For each Small Group
-        foreach ($body->data as $group) {
+        foreach ($body as $group) {
             // Get the id
             $smallGroupId = $group->id;
 
