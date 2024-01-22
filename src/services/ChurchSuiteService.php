@@ -64,7 +64,7 @@ class ChurchSuiteService extends Component
             $data['ids'][] = $smallGroupId;
 
             // Add this entry id to our array, using the small group id as the key for reference
-            $data['smallgroups'][$smallGroupId] = $entry->id;
+        $data['smallgroups'][$smallGroupId] = $entry->id;
         }
 
         return $data;
@@ -77,7 +77,7 @@ class ChurchSuiteService extends Component
         // Get all ChurchSuite small groups
         $client = new Client();
 
-        $url = 'https://weareemmanuel.churchsuite.com/embed/smallgroups/json';
+        $url = 'https://weareemmanuel.churchsuite.com/embed/smallgroups/json?show_labels';
 
         $response = $client->request('GET', $url, [
             'query' => [
@@ -125,14 +125,14 @@ class ChurchSuiteService extends Component
         }
 
         // Save a reference to any label data too
-        $data['labels'] = $body->labels ?? [];
+        // $data['labels'] = $body->labels ?? [];
 
         Craft::info('ChurchSuite: Finished getting remote data', __METHOD__);
 
         return $data;
     }
 
-    public function createEntry($group, $labels): void
+    public function createEntry($group): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = new Entry();
@@ -146,10 +146,10 @@ class ChurchSuiteService extends Component
         // Set the author as super admin
         $entry->authorId = 1;
 
-        $this->saveFieldData($entry, $group, $labels);
+        $this->saveFieldData($entry, $group);
     }
 
-    public function updateEntry($entryId, $group, $labels): void
+    public function updateEntry($entryId, $group): void
     {
         // Create a new instance of the Craft Entry Model
         $entry = Entry::find()
@@ -158,7 +158,7 @@ class ChurchSuiteService extends Component
             ->status(null)
             ->one();
 
-        $this->saveFieldData($entry, $group, $labels);
+        $this->saveFieldData($entry, $group);
     }
 
     public function closeEntry($entryId): void
@@ -217,7 +217,7 @@ class ChurchSuiteService extends Component
         return true;
     }
 
-    private function saveFieldData($entry, $group, $labels): bool
+    private function saveFieldData($entry, $group): bool
     {
         // Enabled?
         $entry->enabled = ($group->embed_visible == "1") ? true : false;
@@ -247,7 +247,7 @@ class ChurchSuiteService extends Component
             'smallGroupAddressName' => (isset($group->location->address_name)) ? $group->location->address_name : '',
             'smallGroupLatitude' => (isset($group->location->latitude)) ? $group->location->latitude : '',
             'smallGroupLongitude' => (isset($group->location->longitude)) ? $group->location->longitude : '',
-            'smallGroupCategories' => (isset($group->labels)) ? $this->parseLabels($group, $labels) : [],
+            'smallGroupCategories' => (isset($group->labels)) ? $this->parseLabels($group) : [],
             'smallGroupSite' => (isset($group->site)) ? $this->parseSite($group->site) : $this->parseSite(null),
         ]);
 
@@ -284,7 +284,7 @@ class ChurchSuiteService extends Component
         return $leaders;
     }
 
-    private function parseLabels($group, $labels): array
+    private function parseLabels($group): array
     {
         // If there is no category group specified, don't do this
         if (!$this->settings->categoryGroupId) {
@@ -314,20 +314,20 @@ class ChurchSuiteService extends Component
         }
 
         // Parse the assigned labels actual name from separate array
-        $assignedLabels = [];
+        // $assignedLabels = [];
 
-        foreach ($group->labels as $label) {
-            foreach ($labels as $labelMeta) {
-                if ($label->id === $labelMeta->id) {
-                    $assignedLabels[] = $labelMeta;
-                }
-            }
-        }
+        // foreach ($group->labels as $label) {
+        //     foreach ($labels as $labelMeta) {
+        //         if ($label->id === $labelMeta->id) {
+        //             $assignedLabels[] = $labelMeta;
+        //         }
+        //     }
+        // }
 
         $returnIds = [];
 
         // Loop over labels assigned to the group
-        foreach ($assignedLabels as $label) {
+        foreach ($group->labels as $label) {
             // We just need the text
             // $tagSlug = ElementHelper::normalizeSlug($label->name);
             $categorySet = false;
