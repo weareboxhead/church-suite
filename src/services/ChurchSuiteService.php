@@ -77,11 +77,12 @@ class ChurchSuiteService extends Component
         // Get all ChurchSuite small groups
         $client = new Client();
 
-        $url = 'https://weareemmanuel.churchsuite.com/embed/smallgroups/json?show_labels';
+        $url = 'https://weareemmanuel.churchsuite.com/embed/smallgroups/json';
 
         $response = $client->request('GET', $url, [
             'query' => [
                 'view' => 'active_future',
+                'show_labels' => 'true'
             ],
             'headers' => [
                 'Content-Type' => 'application/json',
