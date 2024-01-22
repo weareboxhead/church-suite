@@ -50,7 +50,7 @@ class ChurchSuiteSyncJob extends BaseJob
                 ])
             );
 
-            Queue::push(new ChurchSuiteCreateSmallGroupItemJob($remoteData['smallgroups'][$id], $remoteData['labels']));
+            Queue::push(new ChurchSuiteCreateSmallGroupItemJob($remoteData['smallgroups'][$id]));
         }
 
         // Update all existing small group entries
@@ -66,7 +66,7 @@ class ChurchSuiteSyncJob extends BaseJob
                 ])
             );
 
-            Queue::push(new ChurchSuiteUpdateSmallGroupItemJob($localData['smallgroups'][$id], $remoteData['smallgroups'][$id], $remoteData['labels']));
+            Queue::push(new ChurchSuiteUpdateSmallGroupItemJob($localData['smallgroups'][$id], $remoteData['smallgroups'][$id]));
         }
 
         // If we have local data that doesn't match with anything from remote we should close the local entry
